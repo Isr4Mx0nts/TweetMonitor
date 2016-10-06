@@ -1,3 +1,4 @@
+from urlparse import urlparse
 import time
 import requests
 import tweepy
@@ -10,6 +11,7 @@ import threading
 from lib.correo.clientcorreo import ClientCorreo
 from lib.config.appconfig import CorreoConfig
 from tweepy.auth import OAuthHandler
+from termcolor import colored
 
 
 
@@ -78,38 +80,58 @@ class StdOutListener(tweepy.StreamListener ):
 		#goo.gl/gZUiCA  #sre  #defacement
 		for i in LIST[1]:#Lista de ataques (hashtags)
 			matches = re.findall(r'#\w*', tweet)
-			if (i in matches):
-				print("Esta el hastag en los matches") 
+			matches2 = re.findall(r'\w*', tweet)
+			if ( (unicode(i, "utf-8")) in matches or (unicode,'#'+i) in matches2):
 			#matches = re.findall(r'#\w*', tweet)
 			#print (matches)
 			#if (matches):
 				if (url):
 					for j in url:
-						if (j['url']):
+						if (j['expanded_url'] or j['url']):
+							
 							urlCortada = j['url']
+							#if "http" not in urlCortada:
+							#	urlCortada = "http"+
 							resp = session.head(urlCortada, allow_redirects=True)
+							
+							url_expandida = str(resp.url)
+							print colored(url_expandida, 'blue')
+							
+							domain = urlparse(url_expandida)#.hostname #url_expandida.split("//")[-1].split("/")[0]
+							
+							
 							for k in LIST[0]:#Lista de clientes
 								
-								url_redirect = str(resp.url)
-								if (k in url_redirect):
-									print ("ALERTA con URL")
-									correo_client.EnviaCorreo(tweet, user, url_redirect)
-									exit(0)
+								if (k in str(domain.netloc)):#or k in url_expandida):
+									print colored(user, 'red')
+									print colored(tweet, 'red')
+									print colored(url_expandida, 'red')
+									#print('\x1b[6;30;42m' +user+ '\x1b[0m')
+									correo_client.EnviaCorreo(tweet, user, url_expandida)
+									thread.exit()
 									
 								else:
 									continue
 				else:
-					for h in LIST[0]:
+					for h in LIST[0]: #Lista de clientes
 						twt = tweet.split(" ")		
 						if (h in twt or ("#"+h) in twt):
-							print("ALERTA sin URL")
-							correo_client.EnviaCorreo(tweet, user, url)
-							exit(0)
+							url_expandida = []
+							print colored(user, 'red')
+							print colored(tweet, 'red')
+							print colored("Sin URL detectada")
+							correo_client.EnviaCorreo(tweet, user, url_expandida)
+							thread.exit()
 				
 			else:
 				continue
 
-		print("Sin alerta")
+			
+		print colored(user, 'green')
+		print colored(tweet, 'green')
+		#print('\x1b[6;30;42m' +user+ '\x1b[0m')	
+		#print('\x1b[6;30;42m' +tweet+ '\x1b[0m')
+		thread.exit()
 
 		
 	def on_data(self, data):
@@ -135,3 +157,4 @@ class StdOutListener(tweepy.StreamListener ):
 	def on_error(self, status):
 		print ("Error")
         	print (status)
+

@@ -5,7 +5,7 @@ twitter:
   consumer_secret : 'PrjgcsbR6N1hwPxzkhh4bzC5vXJunoqGz6CDrlXHtoKG8DaZQm'
   path : '/root/twitter/source/files/'
 correo:
-  user: 'israel.montes@sm4rt.com'
-  pwd: 'Ralymontes1111'
+  user: 'israel.montes@'
+  pwd: ''
   dest: 'isaac.i.montes@gmail.com'
   subject: 'Posible ataque ejecutado'
